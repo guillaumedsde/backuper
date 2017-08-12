@@ -1,24 +1,31 @@
 #!/bin/bash
 
-# echo Initialise
-echo "##################################################"$'\r'
 echo "`date`: backup script started"$'\r'
 
+###########     Variable definition     #########
+# name of backup from hostname command
+name="$(hostname)"
+# destination of backup
+backup_destination="backups@example.com:~/$name/"
+# gpg encryption recipient
+gpg_recipient=admin@example.com
+################################################
+
 # Change directory to backups folder
-cd $backup_folder
+cd /home/backups/$name
 
 # Remove old backups leftovers (just in case)
 rm backup.sqsh
-rm "backup.$(date +"%Y-%m-%d").sqsh.gpg"
+rm "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg"
 
 # Remove all but newest backups (to make room)
 ls -1tr | head -n -1 | xargs -d '\n' rm -f --
 
 # Create SquashFS from / without progress bar, using xz compression, excluding folders requiring backups and the backups folder
-sudo mksquashfs / backup.sqsh -no-progress -comp xz -e media dev run mnt proc sys tmp
+sudo mksquashfs / backup.sqsh -no-progress -comp xz -e media dev run mnt proc sys tmp home/backups
 
-# encrypt created SquashFS with GPG for $recipient
-sudo gpg2 --output "backup.$(date +"%Y-%m-%d").sqsh.gpg" --encrypt --recipient $gpg_recipient backup.sqsh
+# encrypt created SquashFS with GPG for $gpg_recipient
+sudo gpg2 --output "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg" --encrypt --recipient $gpg_recipient backup.sqsh
 
 # Report success or failure
 if [[ $? > 0 ]]
@@ -31,20 +38,20 @@ fi
 # Remove Unencrypted SquashFS
 rm backup.sqsh
 
-# Send encrypted SquashFS to $destination over rsync
-# Encapsulated in a while loop to keep trying until transfer is complete (works with --partial in rsync)
+# Send encrypted SquashFS to $name over rsync
+# Encapsulated in a while loop to keep trying until transfer is complete
 while [ 1 ]
 do
-        sudo -u backups rsync -avz "backup.$(date +"%Y-%m-%d").sqsh.gpg" $backup_destination --stats --progress --partial --append-verify
+        # Ruun rsync as user backups for ssh keys
+        sudo -u backups rsync -avz "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg" $backup_destination --partial --human-readable --append-verify
         if [[ $? > 0 ]]
         # if rsync failed: report, wait and try again
         then
-                echo "`date`: ERROR: rsync transfer failure, waiting 120s then trying again..."$'\r'
-                sleep 120
+                echo "`date`: ERROR: rsync transfer failure, waiting 60s then trying again..."$'\r'
+                sleep 60
         # else report success and exit loop
         else
                 echo "`date`: rsync transfer successful"$'\r'
                 exit
         fi
 done
-
