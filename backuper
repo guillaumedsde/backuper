@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# echo Initialise
+echo "##################################################"$'\r'
+echo "`date`: backup script started"$'\r'
+
+# Change directory to backups folder
+cd $backup_folder
+
+# Remove old backups leftovers (just in case)
+rm backup.sqsh
+rm "backup.$(date +"%Y-%m-%d").sqsh.gpg"
+
+# Remove all but newest backups (to make room)
+ls -1tr | head -n -1 | xargs -d '\n' rm -f --
+
+# Create SquashFS from / without progress bar, using xz compression, excluding folders requiring backups and the backups folder
+sudo mksquashfs / backup.sqsh -no-progress -comp xz -e media dev run mnt proc sys tmp
+
+# encrypt created SquashFS with GPG for $recipient
+sudo gpg2 --output "backup.$(date +"%Y-%m-%d").sqsh.gpg" --encrypt --recipient $gpg_recipient backup.sqsh
+
+# Report success or failure
+if [[ $? > 0 ]]
+then
+        echo "`date`: ERROR: gpg2 encryption failure"$'\r'
+else
+        echo "`date`: gpg2 encryption successful"$'\r'
+fi
+
+# Remove Unencrypted SquashFS
+rm backup.sqsh
+
+# Send encrypted SquashFS to $destination over rsync
+# Encapsulated in a while loop to keep trying until transfer is complete (works with --partial in rsync)
+while [ 1 ]
+do
+        sudo -u backups rsync -avz "backup.$(date +"%Y-%m-%d").sqsh.gpg" $backup_destination --stats --progress --partial --append-verify
+        if [[ $? > 0 ]]
+        # if rsync failed: report, wait and try again
+        then
+                echo "`date`: ERROR: rsync transfer failure, waiting 120s then trying again..."$'\r'
+                sleep 120
+        # else report success and exit loop
+        else
+                echo "`date`: rsync transfer successful"$'\r'
+                exit
+        fi
+done
+
