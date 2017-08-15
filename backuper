@@ -8,7 +8,9 @@ name="$(hostname)"
 # destination of backup
 backup_destination="backups@example.com:~/$name/"
 # gpg encryption recipient
-gpg_recipient=admin@example.com
+gpg_recipient="admin@example.com"
+# excluded locations
+excluded="home/backups"
 ################################################
 
 # Change directory to backups folder
@@ -22,7 +24,7 @@ rm "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg"
 ls -1tr | head -n -1 | xargs -d '\n' rm -f --
 
 # Create SquashFS from / without progress bar, using xz compression, excluding folders requiring backups and the backups folder
-sudo mksquashfs / backup.sqsh -no-progress -comp xz -e media dev run mnt proc sys tmp home/backups
+sudo mksquashfs / backup.sqsh -no-progress -comp xz -e media dev run mnt proc sys tmp $excluded
 
 # encrypt created SquashFS with GPG for $gpg_recipient
 sudo gpg2 --output "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg" --encrypt --recipient $gpg_recipient backup.sqsh
