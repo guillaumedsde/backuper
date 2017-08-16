@@ -40,6 +40,9 @@ fi
 # Remove Unencrypted SquashFS
 rm backup.sqsh
 
+# change permissions for backups user
+chown backups:backups "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg"
+
 # Send encrypted SquashFS to $name over rsync
 # Encapsulated in a while loop to keep trying until transfer is complete
 while [ 1 ]
