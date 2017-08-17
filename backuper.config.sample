@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ###########     backuper config file     #########
 # name of backup from hostname command
 name="$(hostname)"
