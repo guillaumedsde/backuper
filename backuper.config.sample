@@ -1,0 +1,10 @@
+###########     backuper config file     #########
+# name of backup from hostname command
+name="$(hostname)"
+# destination of backup
+backup_destination="backups@example.com:~/$name/"
+# gpg encryption recipient
+gpg_recipient="admin@example.com"
+# excluded locations
+excluded="home/backups"
+##################################################
