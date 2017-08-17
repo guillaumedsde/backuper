@@ -1,9 +1,12 @@
 #!/bin/bash
 
-echo "`date`: backup script started"$'\r'
+# Get script running directory
+running_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+echo "`date`: backup script started from $running_dir "$'\r'
 
 # Import variables from backuper.config
-source backuper.config
+source $running_dir/backuper.config
 
 # Change directory to backups folder
 cd /home/backups/$name
