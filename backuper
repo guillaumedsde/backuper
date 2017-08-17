@@ -2,16 +2,8 @@
 
 echo "`date`: backup script started"$'\r'
 
-###########     Variable definition     #########
-# name of backup from hostname command
-name="$(hostname)"
-# destination of backup
-backup_destination="backups@example.com:~/$name/"
-# gpg encryption recipient
-gpg_recipient="admin@example.com"
-# excluded locations
-excluded="home/backups"
-################################################
+# Import variables from backuper.config
+source backuper.config
 
 # Change directory to backups folder
 cd /home/backups/$name
