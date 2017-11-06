@@ -52,6 +52,6 @@ do
         # else report success and exit loop
         else
                 echo "`date`: rsync transfer successful"$'\r'
-                exit
+                break
         fi
 done
