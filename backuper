@@ -55,3 +55,6 @@ do
                 break
         fi
 done
+
+# Remove Encrypted SquashFS
+rm "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg"
