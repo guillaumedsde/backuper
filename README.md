@@ -1,8 +1,10 @@
-# backuper
-a personal backup script
+# Backuper
+Personal backup script
 
-Features:
+## Features
 * Compressed squashFS backup
 * PGP encrypted
 * rsync transfer secured over SSH
 * rsync transfer over very unstable connections
+* handles exclusions
+* seperate config file
