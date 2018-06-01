@@ -13,7 +13,7 @@ cd /home/backups/$name
 
 # Remove old backups leftovers (just in case)
 rm backup.sqsh
-rm "$name.backup.$(date +"%Y-%m-%d").sqsh.gpg"
+rm $name.backup.*
 
 # Remove all but newest backups (to make room)
 ls -1tr | head -n -1 | xargs -d '\n' rm -f --
